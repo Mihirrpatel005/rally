@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+
+<Library>	
+	<Book ISBN="ISBN-13: 978-0805324020" publisher="The Benjamin/Cummings" year="1979" count="1" >
+		<Title>Physical Chemistry: with Applications to the Life Sciences</Title>
+		<Authors>
+			<Author authorIdent="DE"/>
+			<Author authorIdent="DC"/>
+		</Authors>
+	</Book>	
+	<Book ISBN="ISBN 0764547097" publisher="M&amp;T Books" edition="1st" year="2000" count="2" >
+		<Title>XHTML: moving toward</Title>
+		<Authors>
+			<Author authorIdent="SL"/>
+		</Authors>
+	</Book>	
+    <Book ISBN="ISBN:978-1-4493-6994-1" publisher="OReilly Media"  year="2014" count="1" >
+		<Title> Introducing Elixir: Getting Started in Functional Programming </Title>
+		<Authors>
+			<Author authorIdent="SL" />
+			<Author authorIdent="DE" />
+		</Authors>
+	</Book>	
+	<Author ident="DC">
+		<First_Name>Donald</First_Name>
+		<Last_Name>Crothers</Last_Name>
+	</Author>
+	<Author ident="SL">
+		<First_Name>Simon St.</First_Name>
+		<Last_Name>Laurent</Last_Name>
+	</Author>
+	<Author ident="DE">
+		<First_Name>David</First_Name>
+		<Last_Name>Eisenberg</Last_Name>
+	</Author>
+</Library>
