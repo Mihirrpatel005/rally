@@ -3,56 +3,56 @@ package com.samples.HTMLParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.security.auth.Subject;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 public class HTMLHandler {
 	final static Logger logger = Logger.getLogger(HTMLHandler.class);
-	
-	class HTMLModel {
-		public String Head;
-		public String Body;
-		public HTMLModel(String head, String body) { Head = head; Body = body; }
-	}
 
     private static HTMLHandler instance = null;
-	private static String[] fullHTMLRegexArray = null;
-	private static String doctypeRegex = "<!DOCTYPE(\\w*|\"[^\"]*\"|\\s*)*>";
-	private static String attributeRegex = "([\\w][:-]?)+=\"[^\"]*\"|\'[^\']*'";
-	private static String anythingRegex = "((.|\\s)*?)*";
+	private static String fullHTMLRegexP1 = null;
+	private static String fullHTMLRegexP2 = null;
 	
-	// TODO: hardcoded indexes
-	public static int PatternIndexHead = 2;
-	public static int PatternIndexBody = 4;
+	private static String doctypeRegex = "<!DOCTYPE(?:\\w*|\"[^\"]*\"|\\s*)*>";
+	private static String attributeRegex = "(?:[\\w][:-]?)+=\"[^\"]*\"|\'[^\']*'";
+	private static String anythingRegex = "((?:(?:.|\\s)*?)*)";
+	
+	public static String testRegex = null;
 
+	public static int HeadContentGroup = 1;
 	
 	// Useful patterns
 	// tagRegex - <\w*(\s*([:\w-])+=\"[^\"]*\"|\'[^\']*'>]))*\s*>anything</\w*>
 	// hbContentRegex - (\s*(((?!<head|<body|</head>|</body>).)*)\s*)*  <- bad regex
-	// anythingRegex - (\s*(.*)\s*)* <- bad regex
+	// anythingRegex - (\s|.))* <- bad anything regex
+	
 	
 	private HTMLHandler() {
 		// TODO: Current regex wont check if tags inside body are valid or if head contains only tags
 		// TODO: Temp solution, will be doing fragmented matching to avoid hanging
 		// Will match up until <head>, next starting from last char up until end of head, similar for <body>
-		String HTMLRegexP1 = "", HTMLRegexP2 = "", HTMLRegexP3 = "", HTMLRegexP4 = "";
-		String attributeListRegex = "(\\s*" + attributeRegex + ")*\\s*";
+		String attributeListRegex = "(?:\\s*" + attributeRegex + ")*\\s*";
 		
-		HTMLRegexP1 = "(?i)^"; // case insensitive pattern
-		HTMLRegexP1 += "\\s*(" + doctypeRegex + ")?";
-		HTMLRegexP1 += "\\s*<html" + attributeListRegex +">\\s*";
+		fullHTMLRegexP1 = "(?i)^";
+		fullHTMLRegexP1 += "\\s*(?:" + doctypeRegex + ")?";
+		fullHTMLRegexP1 += "\\s*<html" + attributeListRegex +">\\s*";		
+		fullHTMLRegexP1 += "<head" + attributeListRegex + ">" + anythingRegex + "</head>\\s*";
+		fullHTMLRegexP1 += "<body" + attributeListRegex + ">";
 		
-		HTMLRegexP1 += "<head" + attributeListRegex + ">";
-		HTMLRegexP2	+= "" + anythingRegex + "</head>\\s*";  // Important: hangs without last \s*
+		// This part will be done without regex to avoid crash 
+		//fullHTMLRegex += "" + anythingRegex + "</body>\\s*"; 
 		
-		HTMLRegexP3 += "<body" + attributeListRegex + ">";
-		HTMLRegexP4 += "" + anythingRegex + "</body>\\s*";
-		//HTMLRegexP4 += "</html>\\s*$";
+		fullHTMLRegexP2 = "^\\s*</html>\\s*$";
 		
-		fullHTMLRegexArray = new String[] {HTMLRegexP1, HTMLRegexP2, HTMLRegexP3, HTMLRegexP4};
+		testRegex = "<td [ \\t]*class=\"test\"[ \\t]*>\\s*<a [ \\t]*href=\"([\\w\\. ]*)\"[ \\t]*>"
+				  + anythingRegex + "</a>\\s*</td>";
 	}
 	
     public static HTMLHandler getInstance() {
@@ -80,13 +80,14 @@ public class HTMLHandler {
 
 		try {
 			File file = new File(filePath);
-			fis = new FileInputStream(file);
+			fis = new FileInputStream(file);getClass();
 			
-			if (file.length() == 0) { 
+			if (((Long)file.length()).compareTo((long)0) == 0) { 
+				logger.error("File at path " + filePath + " is empty");
 				result = false;
 			}
 		} catch (IOException | SecurityException e) {
-			 logger.info(e.getMessage());
+			 logger.error(e.getMessage());
 			result = false;
 		} finally {
 		    IOUtils.closeQuietly(fis);
@@ -96,17 +97,35 @@ public class HTMLHandler {
 	}
 	
 	/**
+	 * Checks if file has HTML file extension
 	 * 
-	 * @param filePath
-	 * @return
+	 * @param filePath - path to file
+	 * @return  <code>true</code> if file has HTML file extension, <code>false</code> otherwise
 	 */
-	public boolean checkHTMLFileValidity(String filePath) {
-		if (!checkFileIntegrity(filePath)) {
-			logger.error("File is empty, corrupted or protected");
-			return false;
-		}
+	public boolean isHTMLFile(String filePath) {
+		String extension = FilenameUtils.getExtension(filePath);
 		
-		//TODO: check extension
+		if(extension.equalsIgnoreCase("html") || extension.equalsIgnoreCase("htm"))
+			return true;
+		
+		return false;
+	}
+
+	/**
+	 * Parses given HTML file content and extracts HTML head and body content.
+	 * 
+	 * @param filePath - path to HTML file
+	 * @return HTMLModel with file head and body content; or
+	 * null if file is corrupted or content doesn't match HTML structure 
+	 * 
+	 */
+	public HTMLModel parseHTMLFile(String filePath) {
+		if (!checkFileIntegrity(filePath) || !isHTMLFile(filePath)) {
+			logger.error("File is empty, corrupted or protected");
+			return null;
+		}
+
+		HTMLModel resultHTML = null;
 		
 		FileInputStream fis = null;
 		String fileContent = null;
@@ -120,39 +139,101 @@ public class HTMLHandler {
     		fileContent = new String(buffer);
     		
 		} catch (IOException e) {
-			logger.info(e.getMessage());
+			logger.error(e.getMessage());
 		} finally {
 			IOUtils.closeQuietly(fis);
 		}
 		
 		
-		Matcher matcher;
-		int index = 0;
-		String stringPart = fileContent; 
-		HTMLModel sampleHTML = new HTMLModel("", "");
-		
-		for (int i = 0; i < fullHTMLRegexArray.length; i++) {
-			String regexPart = fullHTMLRegexArray[i];
-			matcher = Pattern.compile(regexPart).matcher(stringPart);
+		Matcher matcher = Pattern.compile(fullHTMLRegexP1).matcher(fileContent);	
+		if (matcher.find()) {
+			// Workaround for hanging regex
+			String lastPart = fileContent.substring(matcher.end());
+			int bodyEndtagIndex = lastPart.indexOf("</body>");
 			
-			if (matcher.find()) {
-				index = matcher.end();
-				stringPart = stringPart.substring(index);
-				
-				if (i == PatternIndexHead) {
-					sampleHTML.Head = matcher.group(1);
-				} else if (i == PatternIndexBody) {
-					sampleHTML.Body = matcher.group(1);
-				}
-				logger.warn(index); 
-			} else {
-				logger.warn("File content is not a valid HTML");
-				return false;
+			resultHTML = new HTMLModel("", "");
+			resultHTML.Head = matcher.group(HeadContentGroup).trim();
+			resultHTML.Body = lastPart.substring(0, bodyEndtagIndex).trim();
+			
+			matcher = Pattern.compile(fullHTMLRegexP2)
+					.matcher(lastPart.substring(bodyEndtagIndex + ((String)"</body>").length()));
+			if(!matcher.find()) {
+				resultHTML = null;
 			}
+		} 
+		
+		if (resultHTML == null) logger.info("File content is not a valid HTML");
+		else logger.info("File content is a valid HTML");
+
+		return resultHTML;
+	}
+	
+	/**
+	 * Checks if files referenced in given file are valid (exist, non-empty, non-corrupted)
+	 * 
+	 * @param filePath - path to HTML file
+	 * @param optionalRegex - optional regex to match external link filename with first capture group
+	 *  , to use default testRegex pass ""
+	 * @return <code>true</code> if all files are valid, <code>false</code> otherwise
+	 */
+	public boolean checkExternaFilelLinkValidity(String filePath, String regex) {
+		HTMLModel html = parseHTMLFile(filePath);
+		if (html == null) {
+			return false;
 		}
 		
-		logger.warn("File content is a valid HTML");
-		return true;
+		boolean result = true;
+		try {
+			if (regex == "") {
+				regex = testRegex;
+				logger.info("Will use built in regex for searching");
+			}
+			
+			String parentDirPath = FilenameUtils.getFullPath(filePath);
+			ArrayList<String> paths = new ArrayList<String>();
+			Matcher matcher = Pattern.compile(regex).matcher(html.Body);	
+			while(matcher.find()) {
+				paths.add(parentDirPath + matcher.group(1));
+			}
+			
+			for (String path : paths) {
+				if (!checkFileIntegrity(path)) {
+					result = false;
+				}
+			}
+			
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+		}
+	
+		if (result)logger.info("File and all linked files passed validation");
+		else logger.info("File and/or linked files didn't pass validation");
+		
+		return result;
+	}
+	
+	public boolean containsKeyword(String filePath, String keyword) {
+		HTMLModel html = parseHTMLFile(filePath);
+		if (html == null) {
+			return false;
+		}
+		
+		boolean result = false;
+		try {
+			String keywordRegex = "<([^<>])*>[^<>]?" + keyword + "[^<>]*</?\\w";
+			Matcher matcher = Pattern.compile(keywordRegex).matcher(html.Body);
+			if (matcher.find()) {
+				result = true;
+			}
+			
+		} catch (Exception ex) {
+			logger.error(ex.getMessage());
+		}
+	
+		if (result)logger.info("File contains give keyword");
+		else logger.info("File doesn't contain give keyword");
+		
+		return result;
 	}
 	
 }
