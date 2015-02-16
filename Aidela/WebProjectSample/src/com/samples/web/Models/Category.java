@@ -15,7 +15,7 @@ public class Category {
 	}
 
 	public boolean addBook(Book book) {
-		if (BooksDictionary.containsKey(book.getISBN())) {
+		if (!BooksDictionary.containsKey(book.getISBN())) {
 			BooksDictionary.put(book.getISBN(), book);
 			ItemsCount++;
 			return true;
@@ -28,6 +28,13 @@ public class Category {
 			return BooksDictionary.get(isbn);
 		}
 		return null;
+	}
+	
+	public boolean containsBookWithISBN(String isbn) {
+		if (BooksDictionary.containsKey(isbn)) {
+			return true;
+		}
+		return false;
 	}
 	
 	public String getName() {

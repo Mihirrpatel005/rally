@@ -4,7 +4,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Insert title here</title>
+<title>Library: Home</title>
 </head>
 <body>
    <%@ page import="java.util.ArrayList, com.samples.web.Models.Category" %>
@@ -18,7 +18,7 @@
        for(Category category : categories) {
     	   String name = category.getName();
     %>
-   <a href="<%=request.getContextPath()%>/home?category=<%= name %>"><h3><%= name %></h3></a>
+   <a href="<%=request.getContextPath()%>/home?category=<%= name %>"><h3><%= name %> (<%= category.getItemsCount() %>)</h3></a>
    <%
        }
    }

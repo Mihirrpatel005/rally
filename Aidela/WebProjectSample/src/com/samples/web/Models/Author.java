@@ -8,6 +8,11 @@ public class Author {
 		setFirstName(firstName);
 		setLastName(lastName);
 	}
+	
+	public String getFullName() {
+		return FirstName + " " + LastName;
+	}
+	
 	public String getFirstName() {
 		return FirstName;
 	}

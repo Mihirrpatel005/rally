@@ -31,8 +31,12 @@ public class MainServlet extends HttpServlet implements Servlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		if (request.getParameter("category") != null) {
 			// Category view request
-			request.setAttribute("name", request.getParameter("category"));
+			request.setAttribute("category", Library.getInstance().getCategoryWithName(request.getParameter("category")));
 			request.getRequestDispatcher("/JSP/category.jsp").forward(request, response);
+		} else if (request.getParameter("bookid") != null) {
+			// Book view request
+			request.setAttribute("book", Library.getInstance().getBookWithISBN(request.getParameter("bookid")));
+			request.getRequestDispatcher("/JSP/book.jsp").forward(request, response);
 		} else {
 			// Default request
 			request.setAttribute("categoryArrayList", Library.getInstance().getCategories());

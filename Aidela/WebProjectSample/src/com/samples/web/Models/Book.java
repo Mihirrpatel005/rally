@@ -25,6 +25,25 @@ public class Book {
 		setEdition(edition);
 	}
 	
+	public String getStringWithAuthors() {
+		StringBuilder builder = new StringBuilder();
+		
+		for (int i = 0; i < Authors.size(); i++) {
+			String name = Authors.get(i).getFullName();
+			if (i == 0) {
+				builder.append(name);
+			} else if (i + 1 == Authors.size()) {
+				builder.append(" and ");
+				builder.append(name);
+			} else {
+				builder.append(", ");
+				builder.append(name);
+			}
+		}
+
+		return builder.toString();
+	}
+	
 	public String getTitle() {
 		return Title;
 	}
