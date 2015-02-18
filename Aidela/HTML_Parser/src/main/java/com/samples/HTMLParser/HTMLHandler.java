@@ -230,8 +230,8 @@ public class HTMLHandler {
 			logger.error(ex.getMessage());
 		}
 	
-		if (result)logger.info("File contains give keyword");
-		else logger.info("File doesn't contain give keyword");
+		if (result)logger.info("File contains given keyword");
+		else logger.info("File doesn't contain given keyword");
 		
 		return result;
 	}

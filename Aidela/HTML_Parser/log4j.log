@@ -615,3 +615,27 @@ INFO  2015-02-09 14:46:54 HTMLHandler(containsKeyword:233) - File contains give 
 INFO  2015-02-09 14:46:54 HTMLHandler(parseHTMLFile:166) - File content is a valid HTML
 INFO  2015-02-09 14:46:54 HTMLHandler(checkExternaFilelLinkValidity:189) - Will use built in regex for searching
 INFO  2015-02-09 14:46:54 HTMLHandler(checkExternaFilelLinkValidity:209) - File and all linked files passed validation
+ERROR 2015-02-18 14:58:45 HTMLHandler(checkFileIntegrity:90) - C:UsersakaramyanDesktopoverview.html (The system cannot find the file specified)
+ERROR 2015-02-18 14:58:45 HTMLHandler(parseHTMLFile:124) - File is empty, corrupted or protected
+ERROR 2015-02-18 14:58:45 HTMLHandler(checkFileIntegrity:90) - C:UsersakaramyanDesktopoverview.html (The system cannot find the file specified)
+ERROR 2015-02-18 14:58:45 HTMLHandler(parseHTMLFile:124) - File is empty, corrupted or protected
+ERROR 2015-02-18 14:59:21 HTMLHandler(checkFileIntegrity:90) - C:\Users\akaramyan\Desktop\overview.html (The system cannot find the file specified)
+ERROR 2015-02-18 14:59:21 HTMLHandler(parseHTMLFile:124) - File is empty, corrupted or protected
+ERROR 2015-02-18 14:59:21 HTMLHandler(checkFileIntegrity:90) - C:\Users\akaramyan\Desktop\overview.html (The system cannot find the file specified)
+ERROR 2015-02-18 14:59:21 HTMLHandler(parseHTMLFile:124) - File is empty, corrupted or protected
+INFO  2015-02-18 14:59:45 HTMLHandler(parseHTMLFile:165) - File content is not a valid HTML
+INFO  2015-02-18 14:59:45 HTMLHandler(parseHTMLFile:165) - File content is not a valid HTML
+INFO  2015-02-18 15:00:14 HTMLHandler(parseHTMLFile:166) - File content is a valid HTML
+INFO  2015-02-18 15:00:14 HTMLHandler(containsKeyword:233) - File contains give keyword
+INFO  2015-02-18 15:00:14 HTMLHandler(parseHTMLFile:166) - File content is a valid HTML
+INFO  2015-02-18 15:00:14 HTMLHandler(checkExternaFilelLinkValidity:189) - Will use built in regex for searching
+ERROR 2015-02-18 15:00:14 HTMLHandler(checkFileIntegrity:90) - C:\Users\akaramyan\Desktop\suite1_test1_results.html (The system cannot find the file specified)
+ERROR 2015-02-18 15:00:14 HTMLHandler(checkFileIntegrity:90) - C:\Users\akaramyan\Desktop\suite1_test2_results.html (The system cannot find the file specified)
+INFO  2015-02-18 15:00:14 HTMLHandler(checkExternaFilelLinkValidity:210) - File and/or linked files didn't pass validation
+INFO  2015-02-18 15:02:18 HTMLHandler(parseHTMLFile:166) - File content is a valid HTML
+INFO  2015-02-18 15:02:18 HTMLHandler(containsKeyword:233) - File contains given keyword
+INFO  2015-02-18 15:02:18 HTMLHandler(parseHTMLFile:166) - File content is a valid HTML
+INFO  2015-02-18 15:02:18 HTMLHandler(checkExternaFilelLinkValidity:189) - Will use built in regex for searching
+ERROR 2015-02-18 15:02:18 HTMLHandler(checkFileIntegrity:90) - C:\Users\akaramyan\Desktop\suite1_test1_results.html (The system cannot find the file specified)
+ERROR 2015-02-18 15:02:18 HTMLHandler(checkFileIntegrity:90) - C:\Users\akaramyan\Desktop\suite1_test2_results.html (The system cannot find the file specified)
+INFO  2015-02-18 15:02:18 HTMLHandler(checkExternaFilelLinkValidity:210) - File and/or linked files didn't pass validation
