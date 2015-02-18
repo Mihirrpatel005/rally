@@ -12,7 +12,6 @@ public class Main {
         logger.info("Input xml file path to validate:");
         Scanner in = new Scanner(System.in);
         LibraryHandler.getInstance().validateXML(in.nextLine());
-    	// C:\Users\akaramyan\Desktop\xml\library.xml
         in.close();
     	
     	Book book = new Book();
