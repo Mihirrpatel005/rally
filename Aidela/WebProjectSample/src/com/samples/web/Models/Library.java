@@ -2,6 +2,8 @@ package com.samples.web.Models;
 
 import java.util.ArrayList;
 
+import com.samples.web.DBHandler;
+
 public class Library {
 	private static Library instance = null;
 	
@@ -36,6 +38,7 @@ public class Library {
 		    add(new Author("Leo", "Tolstoy"));
 		}});
 		addBook(book2, "Fiction");
+//		addBook(book2, "Biography");
 		
 		Book book3 = new Book("The Reaper: Autobiography of One of the Deadliest Special Ops Snipers",
 								"9781250045447", "St. Martin's Press", "2015", 1, "1st");
@@ -76,6 +79,7 @@ public class Library {
 		Category category = new Category(name);
 		if(!Categories.contains(category)) {
 			Categories.add(category);
+			DBHandler.getInstance().saveCategory(category);
 			return true;
 		} else {
 			return false;
@@ -92,7 +96,12 @@ public class Library {
 		if (book == null || category == null || !containsCategoryWithName(category)) {
 			result = false;
 		} else {
+			for (Author author : book.getAuthors()) {
+//				DBHandler.getInstance().saveAuthor(author);
+			}
 			getCategoryWithName(category).addBook(book);
+			DBHandler.getInstance().saveBook(book);
+			DBHandler.getInstance().updateCategory(getCategoryWithName(category));
 		}
 
 		return result;

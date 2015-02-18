@@ -1,18 +1,61 @@
 package com.samples.web.Models;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-public class Book {
-	public String Title;
-	public String Description;
-	public ArrayList<Author> Authors;
-	public String ISBN;
-	public String Publisher;
-	public String Edition;
-	public String Year;
-	public int Count;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.MapKey;
+import javax.persistence.Table;
+
+@Entity
+@Table (name= "Book")
+public class Book implements Serializable {
+	@Id
+    @GeneratedValue
+    @Column(name = "idBook")
+    private int Id;
+	
+	@Column(name = "title")
+	private String Title;
+	
+	@Column(name = "description")
+	private String Description;
+	
+	@ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(name="BooksByAuthors",
+    	       joinColumns={@JoinColumn(name="author_idAuthor", referencedColumnName="idAuthor")},
+    	       inverseJoinColumns={@JoinColumn(name="book_idBook", referencedColumnName="idBook")})
+	private List<Author> Authors = new ArrayList<Author>();
+	
+	@Column(name = "isbn")
+	private String ISBN;
+	
+	@Column(name = "publisher")
+	private String Publisher;
+	
+	@Column(name = "edition")
+	private String Edition;
+	
+	@Column(name = "year")
+	private String Year;
+	
+	@Column(name = "count")
+	private int Count;
+	
+	/* Constructors */
+	public Book() {}
 	
 	public Book(String title, String isbn, String publisher, String year, int count) {
+		super();
 		setTitle(title);
 		setISBN(isbn);
 		setPublisher(publisher);
@@ -25,6 +68,7 @@ public class Book {
 		setEdition(edition);
 	}
 	
+	/* Public methods */
 	public String getStringWithAuthors() {
 		StringBuilder builder = new StringBuilder();
 		
@@ -44,6 +88,10 @@ public class Book {
 		return builder.toString();
 	}
 	
+	/* Getters and setters */
+	public int getId() {
+		return Id;
+	}
 	public String getTitle() {
 		return Title;
 	}
@@ -56,7 +104,7 @@ public class Book {
 	public void setDescription(String description) {
 		Description = description;
 	}
-	public ArrayList<Author> getAuthors() {
+	public List<Author> getAuthors() {
 		return Authors;
 	}
 	public void setAuthors(ArrayList<Author> authors) {

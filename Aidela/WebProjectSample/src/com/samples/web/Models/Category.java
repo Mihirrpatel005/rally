@@ -1,23 +1,52 @@
 package com.samples.web.Models;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Category {
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.MapKey;
+import javax.persistence.Table;
+
+@SuppressWarnings("serial")
+@Entity
+@Table (name = "BookCategory")
+public class Category implements Serializable {
+	@Id
+	@GeneratedValue
+	@Column(name = "idCategory")
+	public int id;
+	
+	@Column(name = "name")
 	public String Name;
-	public int ItemsCount;
+	
+	@ManyToMany(cascade = {CascadeType.ALL})
+	@MapKey
+    @JoinTable(name="BooksInCategory",
+    	       joinColumns={@JoinColumn(name="category_idCategory", referencedColumnName="idCategory")},
+    	       inverseJoinColumns={@JoinColumn(name="book_idBook", referencedColumnName="idBook")})
 	public Map<String, Book> BooksDictionary;
+
+	/* Constructors */
+	public Category() {}
 	
 	public Category(String name) {
+		super();
 		setName(name);
 		BooksDictionary = new HashMap<String, Book>();
-		ItemsCount = 0;
 	}
 
+	/* Public methods */
 	public boolean addBook(Book book) {
 		if (!BooksDictionary.containsKey(book.getISBN())) {
 			BooksDictionary.put(book.getISBN(), book);
-			ItemsCount++;
 			return true;
 		}
 		return false;
@@ -37,6 +66,7 @@ public class Category {
 		return false;
 	}
 	
+	/* Getters and setters */
 	public String getName() {
 		return Name;
 	}
@@ -44,10 +74,11 @@ public class Category {
 		Name = name;
 	}
 	public int getItemsCount() {
-		return ItemsCount;
+		return BooksDictionary.size();
 	}
 	public Map<String, Book> getBooksDictionary() {
 		return BooksDictionary;
+
 	}
 	
 
