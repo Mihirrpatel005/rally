@@ -12,7 +12,6 @@ public class HibernateUtil {
     private static ServiceRegistry serviceRegistry;
 
     private static void createSessionFactory() {
-    	SessionFactory factory = null;
     	try {
             Configuration configuration = new Configuration();
             configuration.configure();

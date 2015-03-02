@@ -1,14 +1,22 @@
 package com.samples.web.Models;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import com.samples.web.DBHandler;
 
+
 public class Library {
+	
+	final static Logger logger = Logger.getLogger(Library.class);
+	
+	private List<Category> Categories;
+	private DBHandler dbHandler = DBHandler.getInstance();
+	
 	private static Library instance = null;
 	
-	public ArrayList<Category> Categories;
-
 	public static Library getInstance() {
         if(instance == null) {
             instance = new Library();
@@ -16,10 +24,15 @@ public class Library {
         return instance;
     } 
     
+	
+	/* Constructors */
+	
+	@SuppressWarnings("serial")
 	protected Library() {
-		Categories = new ArrayList<Category>();
 		
-		// Sample initialization
+		Categories = dbHandler.getCategoryList();
+
+		// Uncomment when running for first time, to populate database
 		addCategory("Fiction");
 		addCategory("Non-Fiction");
 		addCategory("Philosophy");
@@ -37,16 +50,20 @@ public class Library {
 		book2.setAuthors(new ArrayList<Author>() {{
 		    add(new Author("Leo", "Tolstoy"));
 		}});
+		book2.setDescription("sample description");
 		addBook(book2, "Fiction");
-//		addBook(book2, "Biography");
 		
 		Book book3 = new Book("The Reaper: Autobiography of One of the Deadliest Special Ops Snipers",
 								"9781250045447", "St. Martin's Press", "2015", 1, "1st");
 		book3.setAuthors(new ArrayList<Author>() {{
 		    add(new Author("Nicholas", "Irving"));
 		}});
-		addBook(book3, "Biography");
+		addBook(book3, "Biography"); 
+		
 	}
+	
+	
+	/* Public methods */
 	
 	public boolean containsCategoryWithName(String name) {
 		for (Category category : Categories) {
@@ -60,51 +77,74 @@ public class Library {
 	public Category getCategoryWithName(String name) {
 		for (Category category : Categories) {
 			if (category.getName().equalsIgnoreCase(name)) {
+				if (!category.isLoaded()) {
+					category.populateWithBookList(dbHandler.getBookListForCategory(category));
+				}
+				
 				return category;
 			}
 		}
+		logger.warn("Library doesn't contain category with name " + name);
 		return null;
 	}
 	
 	public Book getBookWithISBN(String isbn) {
+		// Note: This will return null if getCategoryWithName wasn't requested prior
+		// which shouldn't happen with currently implemented workflow
 		for (Category category : Categories) {
 			if (category.containsBookWithISBN(isbn)) {
 				return category.getBookWithISBN(isbn);
 			}
 		}
+		logger.warn("Library doesn't contain book with ISBN:" + isbn);
 		return null;
 	}
 
 	public boolean addCategory(String name) {
-		Category category = new Category(name);
-		if(!Categories.contains(category)) {
+		if(getCategoryWithName(name) == null) {
+			Category category = new Category(name);
 			Categories.add(category);
-			DBHandler.getInstance().saveCategory(category);
+			dbHandler.saveCategory(category);
 			return true;
 		} else {
+			logger.warn("Category with name " + name + " already exists");
+			logger.warn("Aborting add operation for category " + name);
 			return false;
 		}
-	}
-	
-	public ArrayList<Category> getCategories() {
-		return Categories;
 	}
 	
 	public boolean addBook(Book book, String category) {
 		boolean result = true;
 		
-		if (book == null || category == null || !containsCategoryWithName(category)) {
+		if (book == null || category == null) {
+			logger.warn("Unable to add book, given book or category name is null");
+			result = false;
+		} else if (!containsCategoryWithName(category)) {
+			logger.warn("Library doesn't contain category with name " + category);
+			logger.warn("Aborting add operation for book ISBN:" + book.getISBN());
 			result = false;
 		} else {
 			for (Author author : book.getAuthors()) {
-//				DBHandler.getInstance().saveAuthor(author);
+				dbHandler.saveAuthor(author);
 			}
+			
 			getCategoryWithName(category).addBook(book);
-			DBHandler.getInstance().saveBook(book);
-			DBHandler.getInstance().updateCategory(getCategoryWithName(category));
+
+			dbHandler.saveBook(book);
+			dbHandler.saveCategory(getCategoryWithName(category));
 		}
 
 		return result;
+	}
+	
+	
+	/* Getters and Setters */
+	
+	public List<Category> getCategories() {
+		return Categories;
+	}
+	public void setCategories(List<Category> categories) {
+		Categories = categories;
 	}
 	
 }

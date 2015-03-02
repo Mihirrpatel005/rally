@@ -8,10 +8,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+
 @SuppressWarnings("serial")
 @Entity
 @Table (name = "Author")
 public class Author implements Serializable {
+	
 	@Id
     @GeneratedValue
     @Column(name = "idAuthor")
@@ -23,7 +25,9 @@ public class Author implements Serializable {
 	@Column(name = "last_name")
 	public String LastName;
 	
+	
 	/* Constructors */
+	
 	public Author() {}
 	
 	public Author(String firstName, String lastName) {
@@ -31,12 +35,16 @@ public class Author implements Serializable {
 		setLastName(lastName);
 	}
 	
+	
 	/* Public methods */
+	
 	public String getFullName() {
 		return FirstName + " " + LastName;
 	}
 	
+	
 	/* Getters and setters */
+	
 	public String getFirstName() {
 		return FirstName;
 	}
@@ -49,4 +57,5 @@ public class Author implements Serializable {
 	public void setLastName(String lastName) {
 		LastName = lastName;
 	}
+	
 }

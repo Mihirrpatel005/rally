@@ -18,7 +18,7 @@
        for(Category category : categories) {
     	   String name = category.getName();
     %>
-   <a href="<%=request.getContextPath()%>/home?category=<%= name %>"><h3><%= name %> (<%= category.getItemsCount() %>)</h3></a>
+   <a href="<%=request.getContextPath()%>/home?category=<%= name %>"><h3><%= name %> (<%= category.getBookCount() %>)</h3></a>
    <%
        }
    }

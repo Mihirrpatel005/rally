@@ -3,7 +3,6 @@ package com.samples.web.Models;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -13,12 +12,18 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.MapKey;
+import javax.persistence.ManyToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 import javax.persistence.Table;
 
+
+@SuppressWarnings("serial")
 @Entity
 @Table (name= "Book")
+@SecondaryTable(name = "BookDescription", pkJoinColumns=@PrimaryKeyJoinColumn(name="book_idBook"))
 public class Book implements Serializable {
+	
 	@Id
     @GeneratedValue
     @Column(name = "idBook")
@@ -26,15 +31,6 @@ public class Book implements Serializable {
 	
 	@Column(name = "title")
 	private String Title;
-	
-	@Column(name = "description")
-	private String Description;
-	
-	@ManyToMany(cascade = {CascadeType.ALL})
-    @JoinTable(name="BooksByAuthors",
-    	       joinColumns={@JoinColumn(name="author_idAuthor", referencedColumnName="idAuthor")},
-    	       inverseJoinColumns={@JoinColumn(name="book_idBook", referencedColumnName="idBook")})
-	private List<Author> Authors = new ArrayList<Author>();
 	
 	@Column(name = "isbn")
 	private String ISBN;
@@ -51,7 +47,22 @@ public class Book implements Serializable {
 	@Column(name = "count")
 	private int Count;
 	
+	@Column(table="BookDescription", name="description")
+	private String Description;
+	
+	@ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(name="BooksByAuthors",
+    				joinColumns={@JoinColumn(name="book_idBook", referencedColumnName="idBook")},
+    				inverseJoinColumns={@JoinColumn(name="author_idAuthor", referencedColumnName="idAuthor")})
+	private List<Author> Authors = new ArrayList<Author>();
+	
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name="category_idCategory")
+	private Category Category;
+
+	
 	/* Constructors */
+
 	public Book() {}
 	
 	public Book(String title, String isbn, String publisher, String year, int count) {
@@ -68,7 +79,9 @@ public class Book implements Serializable {
 		setEdition(edition);
 	}
 	
+	
 	/* Public methods */
+	
 	public String getStringWithAuthors() {
 		StringBuilder builder = new StringBuilder();
 		
@@ -88,7 +101,9 @@ public class Book implements Serializable {
 		return builder.toString();
 	}
 	
+	
 	/* Getters and setters */
+	
 	public int getId() {
 		return Id;
 	}
@@ -139,6 +154,12 @@ public class Book implements Serializable {
 	}
 	public void setCount(int count) {
 		Count = count;
+	}
+	public Category getCategory() {
+		return Category;
+	}
+	public void setCategory(Category category) {
+		Category = category;
 	}
 	
 }
