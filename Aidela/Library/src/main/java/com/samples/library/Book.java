@@ -1,30 +1,34 @@
 package com.samples.library;
 
 import java.util.ArrayList;
+
 import org.apache.commons.lang3.StringEscapeUtils;
 
 public class Book {
-	public String Title;
-	public String Description;
-	public BookAttributes Attributes;
-	public ArrayList<Author> Authors;
+	private String _title;
+	private String _description;
+	private BookAttributes _attributes;
+	private ArrayList<Author> _authorList;
 	
 	public Book() {
-		Authors = new ArrayList<Author>();
+		setTitle("");
+		setDescription("");
+		setAttributes(new BookAttributes());
+		setAuthorList(new ArrayList<Author>());
 	}
 	
+	// TODO: auto-generate based on schema
 	public String toXML() {
-		// TODO: auto-generate based on schema
-		String result = new String("<Book " + Attributes.toXml() + ">" + "\n" +
-								   "\t" + "<Title>" + Title + "</Title>" + "\n" +				
+		String result = new String("<Book " + _attributes.toXml() + ">" + "\n" +
+								   "\t" + "<Title>" + _title + "</Title>" + "\n" +				
 								   "\t" + "<Authors>" + "\n");
-		for(Author author : Authors) {
+		for(Author author : _authorList) {
 			result += "\t\t" + "<Author authorIdent=\"" + author.getIdent() + "\"/>" + "\n";
 		}
 		result += "\t" + "</Authors>" + "\n";
 		
-		if (Description != null) {
-			result += "\t" + "<Description>" + Description + "</Description>" + "\n";
+		if (_description.length() != 0) {
+			result += "\t" + "<Description>" + _description + "</Description>" + "\n";
 		}
 		result += "</Book>";
 
@@ -32,27 +36,31 @@ public class Book {
 	}
 	
 	public String getTitle() {
-		return Title;
+		return _title;
 	}
 	public void setTitle(String title) {
-		Title = StringEscapeUtils.escapeXml(title);
+		if (title == null) throw new IllegalArgumentException();
+		_title = StringEscapeUtils.escapeXml(title);
 	}
 	public String getDescription() {
-		return Description;
+		return _description;
 	}
 	public void setDescription(String description) {
-		Description = StringEscapeUtils.escapeXml(description);
+		if (description == null) throw new IllegalArgumentException();
+		_description = StringEscapeUtils.escapeXml(description);
 	}
 	public BookAttributes getAttributes() {
-		return Attributes;
+		return _attributes;
 	}
 	public void setAttributes(BookAttributes attributes) {
-		this.Attributes = attributes;
+		if (attributes == null) throw new IllegalArgumentException();
+		this._attributes = attributes;
 	}
-	public ArrayList<Author> getAuthors() {
-		return Authors;
+	public ArrayList<Author> getAuthorList() {
+		return _authorList;
 	}
-	public void setAuthors(ArrayList<Author> authors) {
-		Authors = authors;
+	public void setAuthorList(ArrayList<Author> authors) {
+		if (authors == null) throw new IllegalArgumentException();
+		_authorList = authors;
 	}
 }

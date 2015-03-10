@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 
 import javax.xml.XMLConstants;
@@ -13,7 +12,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.ximpleware.VTDGen;
@@ -21,12 +19,12 @@ import com.ximpleware.VTDNav;
 import com.ximpleware.XMLModifier;
 
 public class LibraryHandler {
-	final static Logger logger = Logger.getLogger(Main.class);
 	
-    private static LibraryHandler instance = null;
-    private static String _xsdPath = "./src/main/resources/xsd-library-xml.xsd";
-    private static String _libPath = "./src/main/resources/library.xml";
+    private static LibraryHandler _instance = new LibraryHandler();
+    private static String _xsdFilePath = "./src/main/resources/xsd-library-xml.xsd";
+    private static String _libFilePath = "./src/main/resources/library.xml";
     private SchemaFactory _schemaFactory;
+    private LoggerHelper _loggerHelper;
 
     // TODO: Allow user to setup/change xsdPath and libPath
     
@@ -36,25 +34,35 @@ public class LibraryHandler {
     
     protected LibraryHandler() {
     	_schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    	
+    	_loggerHelper = LoggerHelper.getInstance();
+    	_loggerHelper.registerLogger();
     }
 
+    
+    /* Public Methods */
+    
     public static LibraryHandler getInstance() {
-        if(instance == null) {
-            instance = new LibraryHandler();
-        }
-        return instance;
-    } 
+        return _instance;
+    }
     
     /**
      * Public:
-     * Validates XML file at given path against <i>"xsd-library-xml.xsd"</i> schema
+     * Validates XML file at given path with <i>"xsd-library-xml.xsd"</i> schema
      * 
-     * @param xmlPath  : path to XML file
+     * @param xmlFilePath
      * @return <code>true</code> when validation passes, <code>false</code> otherwise
      */
-    public boolean validateXML(String xmlPath) {
-    	boolean result = validateWithXMLSchema(_xsdPath, xmlPath);
-    	logger.info(result ? xmlPath + " validation passed" : xmlPath + " validation failed");
+    public boolean validateXmlFile(String xmlFilePath) {
+    	assert _xsdFilePath != null && !_xsdFilePath.isEmpty();
+    	assert _loggerHelper != null;
+    	
+    	if (xmlFilePath == null || xmlFilePath.isEmpty()) {
+    		throw new IllegalArgumentException();
+    	}
+    	
+    	boolean result = validateXmlFileWithSchema(xmlFilePath, _xsdFilePath);
+    	_loggerHelper.logInfo(result ? xmlFilePath + " validation passed" : xmlFilePath + " validation failed");
     	return result;
     }
     
@@ -66,48 +74,67 @@ public class LibraryHandler {
      * @return <code>true</code> when insertion passes, <code>false</code> otherwise
      */
     public boolean insertBook(Book book) {
+    	assert _loggerHelper != null;
+    	
+    	if (book == null) {
+    		throw new IllegalArgumentException();
+    	}
+    	
     	boolean result = insertBook(book, false);
-    	logger.info(result ? "Book was succesfully inserted" : "Book insertion failed");
+    	_loggerHelper.logInfo(result ? "Book was succesfully inserted" : "Book insertion failed");
     	return result;
     }
+
+    
+    /* Private Methods */
     
     /**
-     * Protected:
+     * Private:
      * Validates XML string against given schema
      * Note: XML string structure should fully match schema structure
      * to pass validation, e.g. contain root node
+     * @param xmlString   : XML string for validation
+     * @param xsdFilePath : path to XML schema file
      * 
-     * @param xsdPath    : path to XML schema file
-     * @param xmlString  : XML string for validation
      * @return <code>true</code> when validation passes, <code>false</code> otherwise
      */
-    protected boolean validateStringWithXMLSchema(String xsdPath, String xmlString) {
+    private boolean validateXmlStringWithSchema(String xmlString, String xsdFilePath) {
+    	assert xmlString != null && !xmlString.isEmpty();
+    	assert xsdFilePath != null && !xsdFilePath.isEmpty();
+    	assert _schemaFactory != null;
+    	assert _loggerHelper != null;
+    	
     	try {
-            Schema schema = _schemaFactory.newSchema(new File(xsdPath));
+            Schema schema = _schemaFactory.newSchema(new File(xsdFilePath));
             Validator validator = schema.newValidator();
             validator.validate(new StreamSource(new StringReader(xmlString)));
         } catch (IOException | SAXException e) {
-            logger.error(e.getMessage());
+        	_loggerHelper.logError(e.getMessage());
             return false;
         }
         return true;
 	}
     
     /**
-     * Protected:
+     * Private:
      * Validates XML file against given schema
+     * @param xmlFilePath  : path to XML file
+     * @param xsdFilePath  : path to XML schema file
      * 
-     * @param xsdPath  : path to XML schema file
-     * @param xmlPath  : path to XML file
      * @return <code>true</code> when validation passes, <code>false</code> otherwise
      */
-    protected boolean validateWithXMLSchema(String xsdPath, String xmlPath) {   
+    private boolean validateXmlFileWithSchema(String xmlFilePath, String xsdFilePath) {   
+    	assert xmlFilePath != null && !xmlFilePath.isEmpty();
+    	assert xsdFilePath != null && !xsdFilePath.isEmpty();
+    	assert _schemaFactory != null;
+    	assert _loggerHelper != null;
+    	
         try {
-            Schema schema = _schemaFactory.newSchema(new File(xsdPath));
+            Schema schema = _schemaFactory.newSchema(new File(xsdFilePath));
             Validator validator = schema.newValidator();
-            validator.validate(new StreamSource(new File(xmlPath)));
+            validator.validate(new StreamSource(new File(xmlFilePath)));
         } catch (IOException | SAXException e) {
-            logger.error(e.getMessage());
+        	_loggerHelper.logError(e.getMessage());
             return false;
         }
         return true;
@@ -115,15 +142,17 @@ public class LibraryHandler {
     
     /**
      * Private:
-     * Converts book object into hardcoded XML string 
+     * Creates <i>Library</i> XML node string containing given book and it's authors
      * matching <i>"xsd-library-xml.xsd"</i> schema structure
      *
-     * @param book  : book object for converting
-     * @return library XML string containing given book and it's authors
+     * @param book  : book for wrapping
+     * @return <i>Library</i> XML node string
      */
-    private String convertBookToFullXMLString(Book book) {
+    private String libraryNodeStringFromBook(Book book) {
+    	assert book != null;
+    	
     	String xml = "<Library> \n" + book.toXML();
-    	for(Author author : book.Authors) {
+    	for(Author author : book.getAuthorList()) {
     		xml += "\t" + author.toXML();
     	}
     	xml += "</Library>";
@@ -133,40 +162,51 @@ public class LibraryHandler {
     
     /**
      * Private:
-     * Normalizes XML string indentation for given level 
+     * Adds given number of tabs after each new line in XML string
      * 
-     * @param xmlString  : input string containing XML node
-     * @param level      : nested level for given XML
-     * @return normalized string
+     * @param xmlString  : string containing XML node
+     * @param tabCount   : number of tabs to be added
+     * @return indented string
      */
-    private String normalizeXMLTabs(String xmlString, int level) {
-    	if (level <= 0)
-    		return xmlString;
+    private String identXmlStringWithTabs(String xmlString, int tabCount) {
+    	assert xmlString != null && !xmlString.isEmpty();
+    	assert tabCount > 0;
+
     	String tabs = "";
-    	while (level-- > 0)
+    	while (tabCount-- > 0)
     		tabs += "\t";
+    	
     	return tabs + xmlString.replace("\n", "\n" + tabs);
     }
     
     /**
-     * Public:
+     * Private:
      * Inserts given book object as XML record into <i>"library.xml"</i> 
      *
      * @param book              : book object for inserting into XML library
      * @param replaceExisting   : indicates whether to replace existing record if there's a match
      * @return <code>true</code> when insertion passes, <code>false</code> otherwise
      */
-    protected boolean insertBook(Book book, boolean replaceExisting) {
-    	String xmlToValidate = convertBookToFullXMLString(book);
-    	boolean result = validateStringWithXMLSchema(_xsdPath, xmlToValidate);
-    	logger.info(result ? "Insertion validation passed" : "Insertion validation failed");
+    private boolean insertBook(Book book, boolean replaceExisting) {
+    	assert book != null;
+    	assert _xsdFilePath != null && !_xsdFilePath.isEmpty();
+    	assert _libFilePath != null && !_libFilePath.isEmpty();
+    	assert _schemaFactory != null;
+    	assert _loggerHelper != null;
+    	
+    	String xmlToValidate = libraryNodeStringFromBook(book);
+    	assert xmlToValidate != null && !xmlToValidate.isEmpty();
+    	
+    	boolean result = validateXmlStringWithSchema(xmlToValidate, _xsdFilePath);
+    	_loggerHelper.logInfo(result ? "Insertion validation passed" : "Insertion validation failed");
     	
     	if(result) {
     		try {
-    			File f = new File(_libPath);
+    			File f = new File(_libFilePath);
         		FileInputStream fis = new FileInputStream(f);
         		byte[] ba = new byte[(int)f.length()]; 
         		fis.read(ba); 	
+        		fis.close();
         		
         		VTDGen vg = new VTDGen(); 
         		vg.setDoc(ba); 
@@ -183,11 +223,11 @@ public class LibraryHandler {
             		do {
             			int i = vn.getAttrVal("ISBN");
             			if (i!=-1 && vn.toString(i).equals(isbn)) {
-            				logger.warn("Book with given ISBN \"" + isbn + "\" arelady exists");
+            				_loggerHelper.logWarning("Book with given ISBN \"" + isbn + "\" arelady exists");
             				
-            				// TODO: get rid of empty tabs after replacing
+            				// TODO: Get rid of empty tabs after replacing
             				if (replaceExisting) {
-            					logger.warn("Book with ISBN \"" + isbn + "\" will be replaced");
+            					_loggerHelper.logWarning("Book with ISBN \"" + isbn + "\" will be replaced");
             					xm.remove();
             				} else {
             					return false;
@@ -197,13 +237,13 @@ public class LibraryHandler {
             	}
         		
         		vn.toElement(VTDNav.ROOT);
-        		// TODO: replace hardcoded nesting level number
-        		xm.insertAfterHead(normalizeXMLTabs("\n" + book.toXML(), 1)); 
+        		// TODO: Replace hard-coded nesting level number
+        		xm.insertAfterHead(identXmlStringWithTabs("\n" + book.toXML(), 1)); 
         		
         		// Insert book authors if they don't exists
-        		for (Author author : book.Authors) {
+        		for (Author author : book.getAuthorList()) {
         			boolean exists = false;
-        			String authorId = author.Ident;
+        			String authorId = author.getIdent();
         			vn.toElement(VTDNav.ROOT);
         			if (vn.toElement(VTDNav.FIRST_CHILD, "Author")) {
                 		do {
@@ -220,16 +260,16 @@ public class LibraryHandler {
         			if (!exists) {
         				vn.toElement(VTDNav.ROOT);
                 		vn.toElement(VTDNav.LAST_CHILD, "Book");
-                		xm.insertAfterElement(normalizeXMLTabs("\n" + author.toXML(), 1)); 
+                		xm.insertAfterElement(identXmlStringWithTabs("\n" + author.toXML(), 1)); 
         			}
         		}
         		
-        		xm.output(new FileOutputStream(_libPath));
+        		xm.output(new FileOutputStream(_libFilePath));
         		 
         		return true;
         		
         	} catch (Exception e) { 
-        		logger.error(e.getMessage());
+        		_loggerHelper.logError(e.getMessage());
                 return false;
         	}
     	} else {
